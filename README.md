@@ -42,7 +42,7 @@ Test: 15%
 Categorical features encoded using one-hot encoding
 Numerical features standardised
 
-Results
+Results:
 
 The neural network significantly outperforms linear regression, demonstrating effective non-linear modelling. However, the Random Forest achieves the lowest error overall, which is consistent with known strengths of tree-based models on tabular data.
 
@@ -53,9 +53,15 @@ python Flight_Price_Prediction_NN.py
 The script handles preprocessing, training, evaluation, and result visualisation in a single pipeline.
 
 Dependencies:
+
 Python ≥ 3.10
+
 NumPy
+
 Pandas
+
 Scikit-learn
+
 PyTorch
+
 Matplotlib
