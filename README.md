@@ -43,6 +43,7 @@ Categorical features encoded using one-hot encoding
 Numerical features standardised
 
 Results
+
 The neural network significantly outperforms linear regression, demonstrating effective non-linear modelling. However, the Random Forest achieves the lowest error overall, which is consistent with known strengths of tree-based models on tabular data.
 
 How to Run:
