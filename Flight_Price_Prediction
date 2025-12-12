@@ -184,6 +184,27 @@ print(model)
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
+# 7) Create DataLoaders
+
+BATCH_SIZE = 256
+
+train_dataset = TensorDataset(
+    torch.from_numpy(X_train_proc).float(),
+    torch.from_numpy(y_train).float().view(-1, 1)
+)
+val_dataset = TensorDataset(
+    torch.from_numpy(X_val_proc).float(),
+    torch.from_numpy(y_val).float().view(-1, 1)
+)
+test_dataset = TensorDataset(
+    torch.from_numpy(X_test_proc).float(),
+    torch.from_numpy(y_test).float().view(-1, 1)
+)
+
+train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
+test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
+
 # 8) Training loop with early stopping
 
 EPOCHS = 50
@@ -237,3 +258,48 @@ for epoch in range(1, EPOCHS + 1):
 
 if best_state is not None:
     model.load_state_dict(best_state)
+
+# 9) Evaluation on test set
+
+print("\n=== Neural network test performance ===")
+model.eval()
+all_preds = []
+all_true = []
+
+with torch.no_grad():
+    for xb, yb in test_loader:
+        xb = xb.to(device)
+        preds = model(xb).cpu().numpy().flatten()
+        all_preds.append(preds)
+        all_true.append(yb.numpy().flatten())
+
+all_preds = np.concatenate(all_preds)
+all_true = np.concatenate(all_true)
+
+nn_mae = mean_absolute_error(all_true, all_preds)
+nn_rmse = np.sqrt(mean_squared_error(all_true, all_preds))
+print(f"[Neural Network (PyTorch)] MAE: {nn_mae:.2f}   RMSE: {nn_rmse:.2f}")
+
+print("\nSuccessful.")
+
+import matplotlib.pyplot as plt
+
+models = ["Linear", "Random Forest", "NN (PyTorch)"]
+maes = [lr_mae, rf_mae, nn_mae]
+
+plt.figure()
+plt.bar(models, maes)
+plt.ylabel("MAE")
+plt.title("Test MAE Comparison")
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(8, 5))
+plt.plot(train_losses, label="Training Loss")
+plt.plot(val_losses, label="Validation Loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss (MSE)")
+plt.title("Training and Validation Loss Across Epochs")
+plt.legend()
+plt.grid(True)
+plt.show()
