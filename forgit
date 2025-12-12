@@ -1,3 +1,62 @@
+# 3) Train / validation / test split (70 / 15 / 15)
+# First split: 70% train, 30% temp (val + test)
+
+X_train, X_temp, y_train, y_temp = train_test_split(
+    X,
+    y,
+    test_size=0.30,  # 30% held out for val+test
+    random_state=RANDOM_STATE,
+    shuffle=True,
+)
+
+# Second split: 30% temp into 15% val and 15% test (0.30 * 0.5 = 0.15)
+X_val, X_test, y_val, y_test = train_test_split(
+    X_temp,
+    y_temp,
+    test_size=0.50,  # half of temp → 15% of original
+    random_state=RANDOM_STATE,
+    shuffle=True,
+)
+
+n_total = len(X)
+print("\nSplit sizes:")
+print(f"  Train: {len(X_train)} ({len(X_train)/n_total*100:.1f}%)")
+print(f"  Val  : {len(X_val)} ({len(X_val)/n_total*100:.1f}%)")
+print(f"  Test : {len(X_test)} ({len(X_test)/n_total*100:.1f}%)")
+
+
+# 4) Preprocessing pipeline (dense float32)
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        (
+            "cat",
+            OneHotEncoder(
+                handle_unknown="ignore",
+                sparse_output=False,   # output dense array
+                dtype=np.float32
+            ),
+            categorical_cols,
+        ),
+        (
+            "num",
+            StandardScaler(),
+            numeric_cols,
+        ),
+    ]
+)
+
+X_train_proc = preprocessor.fit_transform(X_train)
+X_val_proc   = preprocessor.transform(X_val)
+X_test_proc  = preprocessor.transform(X_test)
+
+X_train_proc = X_train_proc.astype(np.float32)
+X_val_proc   = X_val_proc.astype(np.float32)
+X_test_proc  = X_test_proc.astype(np.float32)
+
+input_dim = X_train_proc.shape[1]
+print(f"\nPreprocessed feature dimension: {input_dim}")
+
 # 8) Training loop with early stopping
 
 EPOCHS = 50
